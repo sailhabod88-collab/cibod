@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>CIBID — مشغل</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.7/dist/hls.min.js"></script>
+<style>
+:root{
+  --bg:#050508;--surface:#0d0d14;--surface2:#13131e;
+  --border:rgba(255,255,255,.07);--gold:#e8c87a;--gold2:#f5d98a;
+  --red:#e03b3b;--text:#f0eee8;--muted:#7a7a8a;--radius:12px;
+  --sidebar:300px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:'Tajawal',sans-serif;
+  display:flex;flex-direction:column;
+  -webkit-font-smoothing:antialiased;
+}
+/* TOPBAR */
+.topbar{
+  height:56px;flex-shrink:0;
+  display:flex;align-items:center;gap:.85rem;
+  padding:0 1rem;
+  background:rgba(5,5,8,.95);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(20px);z-index:10;
+}
+.back-btn{
+  width:36px;height:36px;
+  background:rgba(255,255,255,.06);border:1px solid var(--border);
+  border-radius:8px;color:var(--muted);font-size:1rem;
+  display:flex;align-items:center;justify-content:center;
+  text-decoration:none;transition:all .2s;flex-shrink:0;
+}
+.back-btn:hover{background:rgba(255,255,255,.11);color:var(--text)}
+.logo{
+  font-family:'Bebas Neue',sans-serif;font-size:1.4rem;
+  letter-spacing:4px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.sep{width:1px;height:20px;background:var(--border);flex-shrink:0}
+.ch-name-bar{flex:1;min-width:0;display:flex;align-items:center;gap:.55rem;overflow:hidden}
+.live-dot{
+  width:7px;height:7px;background:var(--red);border-radius:50%;flex-shrink:0;
+  animation:pulse 1.4s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.65)}}
+.ch-name-text{font-weight:700;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ch-cat-badge{
+  flex-shrink:0;padding:.18rem .6rem;
+  background:rgba(232,200,122,.1);border:1px solid rgba(232,200,122,.22);
+  border-radius:100px;font-size:.65rem;color:var(--gold);font-weight:600;
+}
+/* MAIN */
+.main{flex:1;display:flex;overflow:hidden;min-height:0}
+/* VIDEO */
+.video-section{flex:1;min-width:0;display:flex;flex-direction:column;background:#000;position:relative}
+.video-wrap{flex:1;min-height:0;position:relative;background:#000;display:flex;align-items:center;justify-content:center}
+.video-wrap video{width:100%;height:100%;display:block;object-fit:contain;background:#000;outline:none}
+/* LOADING */
+.v-loading{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:1rem;
+  background:rgba(0,0,0,.8);z-index:5;transition:opacity .35s;
+}
+.v-loading.hide{opacity:0;pointer-events:none}
+.spinner-ring{
+  width:52px;height:52px;
+  border:3px solid rgba(232,200,122,.15);border-top-color:var(--gold);
+  border-radius:50%;animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.v-loading p{font-size:.78rem;color:var(--muted);font-weight:500}
+/* ERROR */
+.v-error{
+  position:absolute;inset:0;display:none;flex-direction:column;
+  align-items:center;justify-content:center;gap:.65rem;
+  background:#000;z-index:5;text-align:center;padding:2rem;
+}
+.v-error.show{display:flex}
+.v-error .err-ico{font-size:2.8rem;margin-bottom:.3rem}
+.v-error strong{font-size:1rem}
+.v-error p{font-size:.8rem;color:var(--muted);max-width:320px;line-height:1.7}
+.v-error small{font-size:.72rem;color:rgba(122,122,138,.6);max-width:320px}
+.btns-row{display:flex;gap:.65rem;margin-top:.35rem;flex-wrap:wrap;justify-content:center}
+.retry-btn{
+  padding:.48rem 1.3rem;
+  background:linear-gradient(135deg,var(--gold),#c9a84c);
+  color:#1a1408;font-family:'Tajawal',sans-serif;
+  font-weight:700;font-size:.82rem;border:none;border-radius:8px;
+  transition:transform .2s,box-shadow .2s;
+}
+.retry-btn:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(232,200,122,.3)}
+.direct-btn{
+  padding:.48rem 1.1rem;
+  background:rgba(255,255,255,.06);border:1px solid var(--border);
+  color:var(--muted);font-family:'Tajawal',sans-serif;
+  font-size:.82rem;border-radius:8px;transition:all .2s;
+}
+.direct-btn:hover{color:var(--text);border-color:rgba(255,255,255,.2)}
+/* INFO STRIP */
+.info-strip{
+  flex-shrink:0;height:44px;
+  display:flex;align-items:center;gap:1.2rem;
+  padding:0 1.2rem;background:var(--surface);border-top:1px solid var(--border);
+}
+.info-strip .il{font-size:.73rem;color:var(--muted)}
+.info-strip .iv{font-size:.78rem;font-weight:600}
+.quality-badge{
+  margin-right:auto;padding:.2rem .6rem;
+  background:rgba(232,200,122,.1);border:1px solid rgba(232,200,122,.2);
+  border-radius:6px;font-size:.65rem;color:var(--gold);font-weight:700;letter-spacing:1px;
+}
+/* SIDEBAR */
+.sidebar{
+  width:var(--sidebar);flex-shrink:0;
+  display:flex;flex-direction:column;
+  background:var(--surface);border-right:1px solid var(--border);overflow:hidden;
+}
+.sidebar-head{
+  flex-shrink:0;padding:.85rem 1rem;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.sidebar-title{font-size:.82rem;font-weight:700;display:flex;align-items:center;gap:.5rem}
+.sidebar-title::before{content:'';display:block;width:3px;height:1em;background:var(--gold);border-radius:2px}
+.sidebar-count{
+  font-size:.7rem;color:var(--muted);
+  background:var(--surface2);padding:.18rem .55rem;border-radius:100px;border:1px solid var(--border);
+}
+.sidebar-search{flex-shrink:0;padding:.6rem .8rem;border-bottom:1px solid var(--border)}
+.sidebar-search input{
+  width:100%;background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;padding:.38rem .75rem;
+  color:var(--text);font-family:'Tajawal',sans-serif;font-size:.8rem;
+  outline:none;transition:border-color .2s;
+}
+.sidebar-search input:focus{border-color:rgba(232,200,122,.4)}
+.sidebar-search input::placeholder{color:var(--muted)}
+.ch-list{flex:1;overflow-y:auto;padding:.5rem 0}
+.ch-list::-webkit-scrollbar{width:3px}
+.ch-list::-webkit-scrollbar-thumb{background:var(--surface2);border-radius:2px}
+/* CHANNEL ITEM */
+.ch-item{
+  display:flex;align-items:center;gap:.7rem;
+  padding:.55rem .85rem;cursor:pointer;
+  transition:background .18s;position:relative;
+}
+.ch-item:hover{background:rgba(255,255,255,.04)}
+.ch-item.active{background:rgba(232,200,122,.07)}
+.ch-item.active::before{
+  content:'';position:absolute;right:0;top:0;bottom:0;
+  width:3px;background:var(--gold);border-radius:2px 0 0 2px;
+}
+.ch-thumb{
+  width:54px;height:34px;flex-shrink:0;
+  background:var(--surface2);border-radius:6px;
+  overflow:hidden;display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--border);position:relative;
+}
+.ch-thumb img{width:100%;height:100%;object-fit:cover}
+.ch-thumb-ph{font-size:1.1rem;opacity:.3}
+.ch-thumb .mini-live{
+  position:absolute;bottom:2px;right:2px;
+  width:5px;height:5px;background:var(--red);border-radius:50%;
+  animation:pulse 1.4s ease-in-out infinite;
+}
+.ch-meta{flex:1;min-width:0}
+.ch-meta .cname{font-size:.8rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
+.ch-meta .ccat{font-size:.68rem;color:var(--muted);margin-top:.15rem}
+.ch-item.active .cname{color:var(--gold)}
+/* RESPONSIVE */
+@media(max-width:768px){
+  :root{--sidebar:100%}
+  html,body{overflow:auto}
+  .main{flex-direction:column;overflow:visible;height:auto}
+  .video-section{height:56vw;min-height:200px;flex-shrink:0}
+  .sidebar{width:100%;border-right:none;border-top:1px solid var(--border)}
+  .ch-list{max-height:260px}
+  body{overflow-y:auto}
+}
+@media(min-width:769px) and (max-width:1100px){--sidebar:240px}
+/* NOISE */
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:9000;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity:.02;
+}
+/* TOAST */
+.toast{
+  position:fixed;bottom:1.5rem;left:50%;
+  transform:translateX(-50%) translateY(60px);
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:100px;padding:.55rem 1.3rem;
+  font-size:.82rem;font-weight:500;z-index:9999;
+  transition:transform .3s cubic-bezier(.34,1.2,.64,1),opacity .3s;
+  opacity:0;white-space:nowrap;pointer-events:none;
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="index.html" class="back-btn">←</a>
+  <div class="logo">CIBID</div>
+  <div class="sep"></div>
+  <div class="ch-name-bar">
+    <span class="live-dot"></span>
+    <span class="ch-name-text" id="topChName">جارٍ التحميل…</span>
+    <span class="ch-cat-badge" id="topChCat">عام</span>
+  </div>
+</div>
+
+<div class="main">
+  <div class="video-section">
+    <div class="video-wrap">
+      <video id="vid" controls playsinline webkit-playsinline preload="none"></video>
+
+      <div class="v-loading" id="vLoad">
+        <div class="spinner-ring"></div>
+        <p id="loadMsg">جارٍ الاتصال بالبث…</p>
+      </div>
+
+      <div class="v-error" id="vErr">
+        <div class="err-ico">📡</div>
+        <strong>تعذّر تشغيل البث</strong>
+        <p id="errMsg">حدث خطأ أثناء تحميل القناة.</p>
+        <small id="errHint"></small>
+        <div class="btns-row">
+          <button class="retry-btn" onclick="retryStream()">↺ إعادة المحاولة</button>
+          <button class="direct-btn" id="directBtn">فتح الرابط مباشرة ↗</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-strip">
+      <span class="quality-badge">HD LIVE</span>
+      <span class="il">القناة</span><span class="iv" id="infoName">—</span>
+      <span class="il">التصنيف</span><span class="iv" id="infoCat">—</span>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <div class="sidebar-head">
+      <div class="sidebar-title">القنوات</div>
+      <span class="sidebar-count" id="sideCount">0</span>
+    </div>
+    <div class="sidebar-search">
+      <input type="search" id="sideSearch" placeholder="ابحث في القنوات…" oninput="renderSidebar()">
+    </div>
+    <div class="ch-list" id="chList"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ════════════════════════════════════════════════
+   ⚙️  CONFIG — ضع رابط الـ Worker هنا بعد نشره
+   ════════════════════════════════════════════════
+   مثال: 'https://cibid-proxy.yourname.workers.dev'
+   اتركه فارغاً إذا كان موقعك على HTTP (بدون S)
+   ════════════════════════════════════════════════ */
+const PROXY_WORKER = '';  // ← ضع رابط الـ Worker هنا
+
+/* ════════════════════════════════════════════════ */
+
+// Encode worker URL so it's not easily readable in source
+const _pw = PROXY_WORKER;
+
+function proxyUrl(url) {
+  if (!url) return url;
+  // If we have a worker, use it
+  if (_pw) return `${_pw}?url=${encodeURIComponent(url)}`;
+  // No proxy — try direct (works on HTTP pages)
+  return url;
+}
+
+/* ─── DATA ─── */
+const DEFAULT_CHANNELS = [{
+  id: 1, name: 'شبكتي HD', category: 'عام',
+  _u: btoa('aHR0cDovL3N0cmVhbS5zaGFiYWthdHkuY29tOjYwMTAvcmVzL2VudGVyL2NoODEvY2g4MV8xMDgwLm0zdTg='),
+  image: ''
+}];
+
+function _dec(x) { try { return atob(atob(x)); } catch { return ''; } }
+
+function getChannels() {
+  try {
+    const s = localStorage.getItem('cibid_channels');
+    if (!s) return DEFAULT_CHANNELS;
+    const list = JSON.parse(s);
+    return list.map(ch => {
+      if (ch.url && !ch._u) { ch._u = btoa(btoa(ch.url)); delete ch.url; }
+      return ch;
+    });
+  } catch { return DEFAULT_CHANNELS; }
+}
+
+function getUrl(ch) {
+  if (ch._u) return _dec(ch._u);
+  if (ch.url) return ch.url;
+  return '';
+}
+
+/* ─── STATE ─── */
+let channels = getChannels();
+let currentId = null;
+let hlsInst = null;
+let retryUrl = '';
+let retryRaw = '';  // raw URL for direct-open button
+
+/* ─── INIT ─── */
+window.addEventListener('DOMContentLoaded', () => {
+  const stored = sessionStorage.getItem('cibid_playing');
+  let startId = channels[0]?.id ?? null;
+  if (stored) { try { startId = JSON.parse(stored).id; } catch {} }
+  renderSidebar();
+  if (startId !== null) playChannel(startId);
+});
+
+/* ─── SIDEBAR ─── */
+function escH(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function renderSidebar() {
+  const q = (document.getElementById('sideSearch').value || '').toLowerCase().trim();
+  const list = document.getElementById('chList');
+  document.getElementById('sideCount').textContent = channels.length;
+
+  let filtered = q ? channels.filter(c => (c.name+' '+(c.category||'')).toLowerCase().includes(q)) : channels;
+
+  if (!filtered.length) {
+    list.innerHTML = `<div style="padding:2rem 1rem;text-align:center;color:var(--muted);font-size:.8rem">لا توجد نتائج</div>`;
+    return;
+  }
+  list.innerHTML = '';
+  filtered.forEach(ch => {
+    const item = document.createElement('div');
+    item.className = 'ch-item' + (ch.id === currentId ? ' active' : '');
+    item.dataset.id = ch.id;
+    const imgHTML = ch.image
+      ? `<img src="${escH(ch.image)}" loading="lazy" onerror="this.style.display='none'">`
+      : `<span class="ch-thumb-ph">📺</span>`;
+    item.innerHTML = `
+      <div class="ch-thumb">${imgHTML}<span class="mini-live"></span></div>
+      <div class="ch-meta">
+        <div class="cname">${escH(ch.name)}</div>
+        <div class="ccat">${escH(ch.category||'عام')}</div>
+      </div>`;
+    item.addEventListener('click', () => playChannel(ch.id));
+    list.appendChild(item);
+  });
+}
+
+/* ─── PLAYER ─── */
+function playChannel(id) {
+  const ch = channels.find(c => c.id === id);
+  if (!ch) return;
+
+  currentId = id;
+  const rawUrl = getUrl(ch);
+  retryUrl = rawUrl;
+  retryRaw = rawUrl;
+
+  document.getElementById('topChName').textContent = ch.name;
+  document.getElementById('topChCat').textContent = ch.category || 'عام';
+  document.getElementById('infoName').textContent = ch.name;
+  document.getElementById('infoCat').textContent = ch.category || 'عام';
+  document.title = `CIBID — ${ch.name}`;
+  document.getElementById('directBtn').onclick = () => window.open(rawUrl, '_blank');
+
+  document.querySelectorAll('.ch-item').forEach(el =>
+    el.classList.toggle('active', +el.dataset.id === id)
+  );
+  sessionStorage.setItem('cibid_playing', JSON.stringify({ id }));
+
+  showLoading(true, 'جارٍ الاتصال بالبث…');
+  hideError();
+  startStream(rawUrl);
+}
+
+function startStream(rawUrl) {
+  const vid = document.getElementById('vid');
+
+  if (hlsInst) { hlsInst.destroy(); hlsInst = null; }
+  vid.pause();
+  vid.removeAttribute('src');
+  vid.load();
+
+  const isHLS = /\.m3u8/i.test(rawUrl);
+  const playUrl = proxyUrl(rawUrl);
+  const isProxied = playUrl !== rawUrl;
+
+  function onReady() { showLoading(false); }
+  function onFail(msg, hint) {
+    showLoading(false);
+    document.getElementById('errMsg').textContent = msg;
+    document.getElementById('errHint').textContent = hint || '';
+    document.getElementById('vErr').classList.add('show');
+  }
+
+  /* ── iOS Safari native HLS ── */
+  if (isHLS && !Hls.isSupported() && vid.canPlayType('application/vnd.apple.mpegurl')) {
+    vid.src = playUrl;
+    vid.addEventListener('loadedmetadata', onReady, { once: true });
+    vid.addEventListener('error', () => onFail(
+      'تعذّر تشغيل البث على هذا الجهاز.',
+      isProxied ? '' : 'تأكد أن رابط الـ Worker مضبوط في الإعدادات.'
+    ), { once: true });
+    vid.play().catch(() => {});
+    return;
+  }
+
+  /* ── HLS.js ── */
+  if (isHLS && typeof Hls !== 'undefined' && Hls.isSupported()) {
+    hlsInst = new Hls({
+      enableWorker: true,
+      maxLoadingDelay: 12,
+      maxBufferLength: 30,
+      liveSyncDurationCount: 3,
+      liveMaxLatencyDurationCount: 8,
+      // If we have a Worker proxy, it handles URL rewriting in the m3u8 itself.
+      // If direct (HTTP page), no proxy needed.
+      // If no worker on HTTPS, try without proxy first, then nothing we can do.
+    });
+
+    let errTimer = setTimeout(() => {
+      onFail(
+        'انتهت مهلة تحميل البث.',
+        isProxied
+          ? 'تأكد أن رابط الـ Worker صحيح وأنه يعمل.'
+          : 'الموقع على HTTPS والبث على HTTP — يحتاج Cloudflare Worker. اضبط PROXY_WORKER في الكود.'
+      );
+    }, 15000);
+
+    hlsInst.on(Hls.Events.MANIFEST_PARSED, () => {
+      clearTimeout(errTimer);
+      onReady();
+      vid.play().catch(() => {});
+    });
+
+    hlsInst.on(Hls.Events.FRAGMENT_LOADED, () => clearTimeout(errTimer));
+
+    hlsInst.on(Hls.Events.ERROR, (_e, data) => {
+      if (!data.fatal) return;
+      clearTimeout(errTimer);
+
+      if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+        // Auto-retry once for network errors
+        if (data.details === Hls.ErrorDetails.MANIFEST_LOAD_ERROR) {
+          onFail(
+            'خطأ في تحميل البث (NETWORK).',
+            isProxied
+              ? 'تحقق أن الـ Worker يعمل، أو جرّب إعادة النشر.'
+              : 'الموقع على HTTPS — ضع رابط الـ Cloudflare Worker في المتغير PROXY_WORKER.'
+          );
+        } else {
+          showLoading(true, 'انقطع الاتصال، إعادة المحاولة…');
+          setTimeout(() => { if (hlsInst) hlsInst.startLoad(-1); }, 2500);
+        }
+      } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+        hlsInst.recoverMediaError();
+      } else {
+        onFail('خطأ غير متوقع في المشغل.');
+      }
+    });
+
+    hlsInst.loadSource(playUrl);
+    hlsInst.attachMedia(vid);
+    return;
+  }
+
+  /* ── Plain src fallback ── */
+  vid.src = playUrl;
+  vid.addEventListener('canplay', onReady, { once: true });
+  vid.addEventListener('error', () => onFail('تعذّر تشغيل الرابط.'), { once: true });
+  vid.play().catch(() => {});
+}
+
+function retryStream() {
+  if (!retryUrl) return;
+  hideError();
+  showLoading(true, 'إعادة الاتصال…');
+  startStream(retryUrl);
+}
+
+function showLoading(on, msg) {
+  document.getElementById('vLoad').classList.toggle('hide', !on);
+  if (msg) document.getElementById('loadMsg').textContent = msg;
+}
+function hideError() {
+  document.getElementById('vErr').classList.remove('show');
+}
+
+/* ─── TOAST ─── */
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+/* ─── SYNC ─── */
+window.addEventListener('storage', e => {
+  if (e.key === 'cibid_channels') {
+    channels = getChannels(); renderSidebar();
+  }
+});
+</script>
+</body>
+</html>

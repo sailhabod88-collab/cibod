@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>CIBID — منصة البث</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050508;--surface:#0d0d14;--surface2:#13131e;
+  --border:rgba(255,255,255,.07);--gold:#e8c87a;--gold2:#f5d98a;
+  --red:#e03b3b;--text:#f0eee8;--muted:#7a7a8a;--radius:12px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:'Tajawal',sans-serif;min-height:100vh;
+  overflow-x:hidden;-webkit-font-smoothing:antialiased;
+}
+img{display:block;max-width:100%}
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:9000;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity:.025;
+}
+nav{
+  position:sticky;top:0;z-index:200;height:60px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 clamp(1rem,4vw,2.5rem);
+  background:rgba(5,5,8,.88);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.logo{
+  font-family:'Bebas Neue',sans-serif;font-size:clamp(1.5rem,4vw,2rem);
+  letter-spacing:4px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--gold),var(--gold2),#fff8e7);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.nav-links{display:flex;gap:clamp(1rem,2vw,2rem);list-style:none}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.9rem;font-weight:500;transition:color .2s}
+.nav-links a:hover,.nav-links a.active{color:var(--text)}
+.nav-right{display:flex;align-items:center;flex-shrink:0}
+.search-wrap{position:relative}
+.search-wrap input{
+  width:clamp(120px,22vw,210px);
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;padding:.45rem 2rem .45rem .85rem;
+  color:var(--text);font-family:'Tajawal',sans-serif;font-size:.88rem;
+  outline:none;transition:border-color .2s;
+}
+.search-wrap input:focus{border-color:rgba(232,200,122,.45)}
+.search-wrap input::placeholder{color:var(--muted)}
+.search-icon{position:absolute;left:.65rem;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.8rem;pointer-events:none}
+@media(max-width:580px){.nav-links{display:none}}
+.hero{
+  position:relative;height:clamp(300px,52vh,580px);
+  display:flex;align-items:flex-end;overflow:hidden;margin-bottom:2.5rem;
+}
+.hero-bg{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse 80% 60% at 60% 30%,rgba(232,200,122,.08) 0%,transparent 70%),
+    radial-gradient(ellipse 50% 80% at 90% 50%,rgba(224,59,59,.06) 0%,transparent 60%),
+    linear-gradient(180deg,#050508 0%,#0a0a12 100%);
+}
+.hero-grid{
+  position:absolute;inset:0;
+  background-image:linear-gradient(rgba(255,255,255,.015) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.015) 1px,transparent 1px);
+  background-size:55px 55px;
+  -webkit-mask-image:radial-gradient(ellipse at center,black 20%,transparent 72%);
+  mask-image:radial-gradient(ellipse at center,black 20%,transparent 72%);
+}
+.hero-content{
+  position:relative;z-index:2;
+  padding:clamp(1.5rem,4vw,3rem) clamp(1rem,4vw,2.5rem);max-width:680px;
+}
+.hero-tag{
+  display:inline-flex;align-items:center;gap:.4rem;
+  padding:.28rem .9rem;
+  background:rgba(232,200,122,.12);border:1px solid rgba(232,200,122,.25);
+  border-radius:100px;font-size:.72rem;font-weight:700;
+  color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:1rem;
+}
+.live-dot{
+  width:7px;height:7px;background:var(--red);border-radius:50%;flex-shrink:0;
+  animation:pulse 1.4s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.65)}}
+.hero h1{font-size:clamp(1.6rem,5vw,3.2rem);font-weight:900;line-height:1.1;margin-bottom:.85rem}
+.hero h1 span{color:var(--gold)}
+.hero p{color:var(--muted);font-size:clamp(.88rem,2vw,1.05rem);font-weight:300;line-height:1.7;margin-bottom:1.6rem}
+.hero-stats{display:flex;gap:clamp(1.2rem,4vw,2.5rem);flex-wrap:wrap}
+.stat-val{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;color:var(--gold);letter-spacing:1px;line-height:1}
+.stat-lbl{font-size:.72rem;color:var(--muted);margin-top:.2rem}
+section{padding:0 clamp(1rem,4vw,2.5rem);margin-bottom:2.5rem}
+.sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem}
+.sec-title{display:flex;align-items:center;gap:.65rem;font-size:1.05rem;font-weight:700}
+.sec-title::before{content:'';display:block;width:4px;height:1.3em;background:var(--gold);border-radius:2px}
+.cats{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.3rem;overflow-x:auto;padding-bottom:.25rem}
+.cats::-webkit-scrollbar{height:3px}
+.cats::-webkit-scrollbar-thumb{background:var(--surface2);border-radius:2px}
+.cat-btn{
+  padding:.32rem .9rem;border:1px solid var(--border);border-radius:100px;
+  background:transparent;color:var(--muted);font-family:'Tajawal',sans-serif;
+  font-size:.8rem;white-space:nowrap;transition:all .2s;
+}
+.cat-btn:hover{border-color:rgba(232,200,122,.35);color:var(--text)}
+.cat-btn.active{background:rgba(232,200,122,.12);border-color:rgba(232,200,122,.5);color:var(--gold);font-weight:700}
+.channels-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(clamp(140px,22vw,200px),1fr));
+  gap:clamp(.75rem,2vw,1.25rem);
+}
+.channel-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  overflow:hidden;cursor:pointer;position:relative;
+  transition:transform .25s,border-color .25s,box-shadow .25s;
+  animation:fadeUp .4s ease both;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.channel-card:hover{
+  transform:translateY(-4px) scale(1.01);border-color:rgba(232,200,122,.3);
+  box-shadow:0 18px 44px rgba(0,0,0,.5),0 0 0 1px rgba(232,200,122,.12);
+}
+.card-thumb{
+  width:100%;aspect-ratio:16/9;background:var(--surface2);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+}
+.card-thumb img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
+.channel-card:hover .card-thumb img{transform:scale(1.06)}
+.thumb-ph{font-size:2.2rem;opacity:.25;user-select:none}
+.live-badge{
+  position:absolute;top:8px;right:8px;
+  display:flex;align-items:center;gap:5px;padding:3px 9px;
+  background:rgba(224,59,59,.88);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  border-radius:100px;font-size:.62rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+}
+.play-overlay{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  background:rgba(5,5,8,0);transition:background .3s;
+}
+.channel-card:hover .play-overlay{background:rgba(5,5,8,.44)}
+.play-btn-icon{
+  width:46px;height:46px;background:rgba(232,200,122,.92);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  transform:scale(0);transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+}
+.channel-card:hover .play-btn-icon{transform:scale(1)}
+.play-btn-icon svg{width:19px;height:19px;fill:#1a1408;margin-right:-3px}
+.card-info{padding:.85rem 1rem}
+.card-name{font-weight:700;font-size:.92rem;margin-bottom:.25rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-cat{font-size:.72rem;color:var(--muted)}
+.empty-state{
+  grid-column:1/-1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:5rem 2rem;
+  color:var(--muted);text-align:center;gap:.85rem;
+}
+.empty-icon{font-size:3rem;opacity:.25}
+.empty-state h3{font-size:1rem;font-weight:600;color:var(--text);opacity:.45}
+.empty-state p{font-size:.85rem;max-width:280px;line-height:1.6}
+footer{
+  border-top:1px solid var(--border);
+  padding:1.75rem clamp(1rem,4vw,2.5rem);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;
+  color:var(--muted);font-size:.78rem;margin-top:3rem;
+}
+.logo-sm{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:4px;color:var(--gold);opacity:.45}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--surface2);border-radius:3px}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">CIBID</div>
+  <ul class="nav-links">
+    <li><a href="#" class="active">الرئيسية</a></li>
+    <li><a href="#">الأفلام</a></li>
+    <li><a href="#">المسلسلات</a></li>
+    <li><a href="#">القنوات</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="search" id="searchInput" placeholder="ابحث..." autocomplete="off" oninput="renderGrid()">
+    </div>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-content">
+    <div class="hero-tag"><span class="live-dot"></span>بث مباشر الآن</div>
+    <h1>منصة <span>CIBID</span><br>للبث المباشر</h1>
+    <p>شاهد قنواتك المفضلة والبث المباشر بجودة عالية في أي وقت وأي مكان.</p>
+    <div class="hero-stats">
+      <div class="stat"><div class="stat-val" id="totalCount">0</div><div class="stat-lbl">قناة متاحة</div></div>
+      <div class="stat"><div class="stat-val">HD</div><div class="stat-lbl">جودة البث</div></div>
+      <div class="stat"><div class="stat-val">24/7</div><div class="stat-lbl">بث متواصل</div></div>
+    </div>
+  </div>
+</div>
+
+<section>
+  <div class="sec-header"><div class="sec-title">جميع القنوات</div></div>
+  <div class="cats" id="catsBar">
+    <button class="cat-btn active" onclick="filterByCategory('all',this)">الكل</button>
+  </div>
+  <div class="channels-grid" id="channelsGrid"></div>
+</section>
+
+<footer>
+  <span class="logo-sm">CIBID</span>
+  <span>© 2025 CIBID — جميع الحقوق محفوظة</span>
+</footer>
+
+<script>
+/* ─── DATA ─── */
+const DEFAULT_CHANNELS = [{
+  id: 1, name: 'شبكتي HD', category: 'عام',
+  _u: btoa('aHR0cDovL3N0cmVhbS5zaGFiYWthdHkuY29tOjYwMTAvcmVzL2VudGVyL2NoODEvY2g4MV8xMDgwLm0zdTg='),
+  image: ''
+}];
+
+// Migrate plain URLs to encoded on first load
+(function migrate() {
+  try {
+    const raw = localStorage.getItem('cibid_channels');
+    if (!raw) { localStorage.setItem('cibid_channels', JSON.stringify(DEFAULT_CHANNELS)); return; }
+    const list = JSON.parse(raw);
+    let changed = false;
+    list.forEach(ch => {
+      if (ch.url && !ch._u) { ch._u = btoa(btoa(ch.url)); delete ch.url; changed = true; }
+    });
+    if (changed) localStorage.setItem('cibid_channels', JSON.stringify(list));
+  } catch {}
+})();
+
+function getChannels() {
+  try {
+    const s = localStorage.getItem('cibid_channels');
+    return s ? JSON.parse(s) : DEFAULT_CHANNELS;
+  } catch { return DEFAULT_CHANNELS; }
+}
+
+/* ─── STATE ─── */
+let allChannels = getChannels(), activeCategory = 'all';
+
+/* ─── CATS ─── */
+function renderCats() {
+  const bar = document.getElementById('catsBar');
+  const cats = [...new Set(allChannels.map(c => c.category).filter(Boolean))];
+  bar.innerHTML = `<button class="cat-btn ${activeCategory==='all'?'active':''}" onclick="filterByCategory('all',this)">الكل</button>`;
+  cats.forEach(cat => {
+    const b = document.createElement('button');
+    b.className = `cat-btn ${activeCategory===cat?'active':''}`;
+    b.textContent = cat;
+    b.onclick = function() { filterByCategory(cat, this); };
+    bar.appendChild(b);
+  });
+}
+function filterByCategory(cat, el) {
+  activeCategory = cat;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderGrid();
+}
+
+/* ─── GRID ─── */
+function escH(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function renderGrid() {
+  const q = (document.getElementById('searchInput').value||'').toLowerCase().trim();
+  const grid = document.getElementById('channelsGrid');
+  document.getElementById('totalCount').textContent = allChannels.length;
+  let list = allChannels;
+  if (activeCategory !== 'all') list = list.filter(c => c.category === activeCategory);
+  if (q) list = list.filter(c => (c.name+' '+(c.category||'')).toLowerCase().includes(q));
+  if (!list.length) {
+    grid.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><h3>لا توجد نتائج</h3><p>جرّب تغيير الفلتر.</p></div>`;
+    return;
+  }
+  grid.innerHTML = '';
+  list.forEach((ch, i) => {
+    const card = document.createElement('div');
+    card.className = 'channel-card';
+    card.style.animationDelay = (i * .045) + 's';
+    card.addEventListener('click', () => openChannel(ch));
+    const imgHTML = ch.image
+      ? `<img src="${escH(ch.image)}" alt="${escH(ch.name)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="thumb-ph" style="display:none;width:100%;height:100%;align-items:center;justify-content:center">📺</div>`
+      : `<div class="thumb-ph">📺</div>`;
+    card.innerHTML = `
+      <div class="card-thumb">
+        ${imgHTML}
+        <div class="live-badge"><span class="live-dot"></span>مباشر</div>
+        <div class="play-overlay"><div class="play-btn-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+      </div>
+      <div class="card-info">
+        <div class="card-name">${escH(ch.name)}</div>
+        <div class="card-cat">${escH(ch.category||'عام')}</div>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+/* ─── NAVIGATE TO PLAYER ─── */
+function openChannel(ch) {
+  sessionStorage.setItem('cibid_playing', JSON.stringify({ id: ch.id }));
+  window.location.href = 'player.html';
+}
+
+/* ─── SYNC ─── */
+function refresh() {
+  const fresh = getChannels();
+  if (JSON.stringify(fresh) !== JSON.stringify(allChannels)) {
+    allChannels = fresh; renderCats(); renderGrid();
+  }
+}
+window.addEventListener('storage', e => { if (e.key === 'cibid_channels') refresh(); });
+window.addEventListener('pageshow', refresh);
+window.addEventListener('focus', refresh);
+
+renderCats();
+renderGrid();
+</script>
+</body>
+</html>
