@@ -22,7 +22,7 @@ body{
 img{display:block;max-width:100%}
 body::after{
   content:'';position:fixed;inset:0;pointer-events:none;z-index:9000;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' result='noise'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='noise' scale='8'/%3E%3C/filter%3E%3Crect width='256' height='256' fill='%23050508' filter='url(%23n)'/%3E%3C/svg%3E");
   opacity:.025;
 }
 nav{
@@ -42,7 +42,7 @@ nav{
 .nav-links{display:flex;gap:clamp(1rem,2vw,2rem);list-style:none}
 .nav-links a{color:var(--muted);text-decoration:none;font-size:.9rem;font-weight:500;transition:color .2s}
 .nav-links a:hover,.nav-links a.active{color:var(--text)}
-.nav-right{display:flex;align-items:center;flex-shrink:0}
+.nav-right{display:flex;align-items:center;gap:1rem;flex-shrink:0}
 .search-wrap{position:relative}
 .search-wrap input{
   width:clamp(120px,22vw,210px);
@@ -54,6 +54,25 @@ nav{
 .search-wrap input:focus{border-color:rgba(232,200,122,.45)}
 .search-wrap input::placeholder{color:var(--muted)}
 .search-icon{position:absolute;left:.65rem;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.8rem;pointer-events:none}
+.admin-btn{
+  padding:.45rem 1rem;
+  background:rgba(232,200,122,.12);
+  border:1px solid rgba(232,200,122,.3);
+  border-radius:8px;
+  color:var(--gold);
+  font-family:'Tajawal',sans-serif;
+  font-size:.85rem;
+  font-weight:600;
+  cursor:pointer;
+  text-decoration:none;
+  transition:all .2s;
+  white-space:nowrap;
+}
+.admin-btn:hover{
+  background:rgba(232,200,122,.2);
+  border-color:rgba(232,200,122,.5);
+  color:var(--gold2);
+}
 @media(max-width:580px){.nav-links{display:none}}
 .hero{
   position:relative;height:clamp(300px,52vh,580px);
@@ -189,6 +208,7 @@ footer{
       <span class="search-icon">🔍</span>
       <input type="search" id="searchInput" placeholder="ابحث..." autocomplete="off" oninput="renderGrid()">
     </div>
+    <a href="db.html" class="admin-btn" title="إدارة قاعدة البيانات">🔒 لوحة التحكم</a>
   </div>
 </nav>
 
@@ -294,7 +314,7 @@ function renderGrid() {
     card.style.animationDelay = (i * .045) + 's';
     card.addEventListener('click', () => openChannel(ch));
     const imgHTML = ch.image
-      ? `<img src="${escH(ch.image)}" alt="${escH(ch.name)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="thumb-ph" style="display:none;width:100%;height:100%;align-items:center;justify-content:center">📺</div>`
+      ? `<img src="${escH(ch.image)}" alt="${escH(ch.name)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="thumb-ph" style="display:none">📺</div>`
       : `<div class="thumb-ph">📺</div>`;
     card.innerHTML = `
       <div class="card-thumb">
