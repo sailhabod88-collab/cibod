@@ -1,0 +1,40 @@
+# نظام الأمان - ملف .htaccess
+
+# منع الوصول المباشر لملفات PHP الحساسة
+<Files "config.php">
+    Order allow,deny
+    Deny from all
+</Files>
+
+# منع عرض قائمة الملفات
+Options -Indexes
+
+# تفعيل mod_rewrite
+RewriteEngine On
+RewriteBase /
+
+# إضافة رؤوس الأمان
+<IfModule mod_headers.c>
+    # منع X-Frame-Options
+    Header always set X-Frame-Options "DENY"
+    
+    # منع MIME-Sniffing
+    Header always set X-Content-Type-Options "nosniff"
+    
+    # حماية من XSS
+    Header always set X-XSS-Protection "1; mode=block"
+    
+    # Strict Transport Security (إذا كان لديك HTTPS)
+    # Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+</IfModule>
+
+# منع الوصول إلى ملفات معينة
+<FilesMatch "\.(env|json|md|gitignore)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# حماية من هجمات Directory Traversal
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
